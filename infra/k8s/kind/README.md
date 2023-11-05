@@ -167,3 +167,29 @@ kube-system          Active   104s
 local-path-storage   Active   93s
 ```
 
+6. since we are not going to keep this cluster running in our computer, let's stop the container.
+
+```sh
+➜  podman ps
+CONTAINER ID  IMAGE                                                                                           COMMAND     CREATED      STATUS      PORTS                      NAMES
+6462ae63dcc6  docker.io/kindest/node@sha256:3966ac761ae0136263ffdb6cfd4db23ef8a83cba8a463690e98317add2c9ba72              3 hours ago  Up 3 hours  127.0.0.1:54886->6443/tcp  kind-control-plane
+➜  podman stop 6462ae63dcc6
+6462ae63dcc6
+➜  podman ps
+CONTAINER ID  IMAGE       COMMAND     CREATED     STATUS      PORTS       NAMES
+➜  podman ps -a
+CONTAINER ID  IMAGE                                                                                           COMMAND     CREATED      STATUS                      PORTS                      NAMES
+6462ae63dcc6  docker.io/kindest/node@sha256:3966ac761ae0136263ffdb6cfd4db23ef8a83cba8a463690e98317add2c9ba72              3 hours ago  Exited (137) 8 seconds ago  127.0.0.1:54886->6443/tcp  kind-control-plane
+➜  k get ns
+The connection to the server 127.0.0.1:54886 was refused - did you specify the right host or port?
+```
+
+* and later on restart it again.
+
+```sh
+➜  podman start 6462ae63dcc6
+6462ae63dcc6
+➜  k get po
+No resources found in default namespace.
+```
+
