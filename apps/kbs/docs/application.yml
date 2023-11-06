@@ -1,0 +1,344 @@
+openapi: 3.0.0
+tags:
+  - name: KBs
+    description: Operations to manage kbs
+servers:
+  - url: 'http://localhost:8080'
+    description: 'local'
+info:
+  description: kbs api
+  version: 1.0.0
+  title: kbs api
+  contact:
+    email: me@yo.com
+paths:
+  /kbs:
+    get:
+      summary: Search kbs that match the given filters
+      description: 'Search kbs that match the given filters, if there is not any return the first 10 kbs'
+      parameters:
+        - in: query
+          name: name
+          schema:
+            type: string
+            example:
+              - drila
+        - in: query
+          name: page
+          description: page we want from the result.
+          schema:
+            type: integer
+            example:
+              - 1
+        - in: query
+          name: pagesize
+          description: how many rows per page.
+          schema:
+            type: integer
+            example:
+              - 1
+        - in: query
+          name: orderby
+          description: name of the field we want to order by.
+          schema:
+            type: string
+            example:
+              - name
+      tags:
+        - KBs
+      operationId: '1'
+      responses:
+        '200':
+          description: list of kbs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchKBsResult'
+                example:
+                  - {
+                      "success": true,
+                      "data": {
+                        "kbs": [
+                          {
+                            "id": "56016eaf-5e15-44db-839c-ef4f7f9df437",
+                            "name": "Drila"
+                          },
+                          {
+                            "id": "ec665f5e-da4e-4f51-bc4c-310dd7cc9590",
+                            "name": "Michael"
+                          }
+                        ],
+                        "total": 2,
+                        "page": 1,
+                        "page_size": 10
+                      },
+                      "errors": null
+                    }
+        '500':
+          description: empty list of kbs and a list of errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchKBsResult'
+                example:
+                  - {
+                      "success": false,
+                      "data": {
+                        "kbs": [],
+                        "total": 0,
+                        "page": 1,
+                        "page_size": 10
+                      },
+                      "errors": [
+                        "database was not available"
+                      ]
+                    }
+    post:
+      summary: Add a new kb to kbs
+      description: 'add a new kb'
+      parameters: []
+      tags:
+        - KBs
+      operationId: '2'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewKB'
+      responses:
+        '200':
+          description: kb was added to kbs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateKBResult'
+                example:
+                  - {
+                      "success": true,
+                      "data": "cb24865f-59f8-48cb-a039-a0e6ee915606",
+                      "errors": null
+                    }
+        '500':
+          description: unable to add kb to the store.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateKBResult'
+                example:
+                  - {
+                      "success": false,
+                      "data": "cb24865f-59f8-48cb-a039-a0e6ee915606",
+                      "errors": [
+                        "database was not available"
+                      ]
+                    }
+    put:
+      summary: Update a new kb to kbs
+      description: 'add a new kb'
+      parameters: []
+      tags:
+        - KBs
+      operationId: '3'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KB'
+      responses:
+        '200':
+          description: kb was updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateKBResult'
+                example:
+                  - {
+                      "success": true,
+                      "data": null,
+                      "errors": null
+                    }
+        '500':
+          description: kb was not updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateKBResult'
+                example:
+                  - {
+                      "success": false,
+                      "data": null,
+                      "errors": [
+                        "database was not available"
+                      ]
+                    }
+  '/kbs/{id}':
+    get:
+      summary: Get a kb
+      description: 'Get a kb'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: KB ID UUID format.
+      tags:
+        - KBs
+      operationId: '4'
+      responses:
+        '200':
+          description: get a kb
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetKBResult'
+                example:
+                  - {
+                      "success": true,
+                      "data": {
+                        "id": "56016eaf-5e15-44db-839c-ef4f7f9df437",
+                        "name": "Drila"
+                      },
+                      "errors": null
+                    }
+                  - {
+                      "success": true,
+                      "data": null,
+                      "errors": null
+                    }
+        '500':
+          description: unable to get a kb
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetKBResult'
+                example:
+                  - {
+                      "success": false,
+                      "data": null,
+                      "errors": [
+                        "database was not available"
+                      ]
+                    }
+    delete:
+      summary: delete a kb
+      description: 'Delete a kb'
+      parameters: []
+      tags:
+        - KBs
+      operationId: '5'
+      responses:
+        '200':
+          description: kb was deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteKBResult'
+                example:
+                  - {
+                      "success": true,
+                      "data": null,
+                      "errors": null
+                    }
+        '500':
+          description: kb was not deleted due to errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteKBResult'
+                example:
+                  - {
+                      "success": false,
+                      "data": null,
+                      "errors": [
+                        "database was not available"
+                      ]
+                    }
+components:
+  schemas:
+    CreateKBResult:
+      type: object
+      properties:
+        success:
+          $ref: "#/components/schemas/Success"
+        data:
+          type: string
+          description: "kb id"
+          example:
+            - "98b17b06-c19f-4105-b451-99972bbc8813"
+        errors:
+          $ref: "#/components/schemas/Errors"
+    UpdateKBResult:
+      type: object
+      properties:
+        success:
+          $ref: "#/components/schemas/Success"
+        errors:
+          $ref: "#/components/schemas/Errors"
+    DeleteKBResult:
+      type: object
+      properties:
+        success:
+          $ref: "#/components/schemas/Success"
+        errors:
+          $ref: "#/components/schemas/Errors"
+    GetKBResult:
+      type: object
+      properties:
+        success:
+          $ref: "#/components/schemas/Success"
+        data:
+          $ref: "#/components/schemas/KB"
+        errors:
+          $ref: "#/components/schemas/Errors"
+    SearchKBsResult:
+      type: object
+      properties:
+        success:
+          $ref: "#/components/schemas/Success"
+        data:
+          type: object
+          properties:
+            kbs:
+              $ref: "#/components/schemas/KBs"
+            total:
+              type: integer
+              description: total number of records that match the filters.
+            page:
+              type: integer
+              description: current page of the list of kbs.
+            page_size:
+              type: integer
+              description: number of records per page.
+        errors:
+          $ref: "#/components/schemas/Errors"
+    KBs:
+      type: array
+      items: {
+        $ref: "#/components/schemas/KB"
+      }
+    NewKB:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "drila"
+    KB:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 'ab856d8b-012a-450a-b2f4-f0ab7554741b'
+        name:
+          type: string
+          example: "Lui"
+    Success:
+      type: boolean
+      description: "it says if the operation was successful or not"
+      example:
+            - true
+            - false
+    Errors:
+      type: array
+      items:
+        type: string

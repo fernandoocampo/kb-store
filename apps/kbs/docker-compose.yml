@@ -1,0 +1,20 @@
+version: '3'
+services:
+    localstack:
+        image: localstack/localstack:latest
+        environment: 
+            - AWS_DEFAULT_REGION=us-east-1
+            - EDGE_PORT=4566
+            - SERVICES=dynamodb
+        ports: 
+            - '4566:4566'
+    api:
+        build: .
+        container_name: "kbs"
+        ports:
+            - "8080:8080"
+        environment: 
+            - KBS_APPLICATION_PORT=:8080
+            - KBS_AWS_REGION=us-east-1
+            - KBS_AWS_ENDPOINT=http://localstack:4566
+            - KBS_LOG_ENVIRONMENT=development
