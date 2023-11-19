@@ -220,7 +220,189 @@ NAME      READY   STATUS    RESTARTS   AGE
 vault-0   1/1     Running   0          31m
 ```
 
+## How to handle multiple teams?
+
+## How to create users?
+
+### First let's enable userpass auth method
+
+... remember to setup env vars first. 
+
+```sh
+export VAULT_ADDR=
+export VAULT_TOKEN=
+```
+
+```sh
+vault auth enable -path="kb-userpass-ops" userpass
+vault auth enable -path="kb-userpass-dev" userpass
+vault auth enable -path="kb-userpass-qa" userpass
+```
+
+and you will see those new userpass here http://localhost:8200/ui/vault/access
+
+### Create policies for our environments
+
+* One for ops
+
+```sh
+vault policy write ops -<<EOF
+path "secret/data/ops" {
+   capabilities = ["create", "read", "update", "delete" ]
+}
+EOF
+```
+
+* One for devs
+
+```sh
+vault policy write dev -<<EOF
+path "secret/data/dev" {
+   capabilities = [ "create", "read", "update", "delete" ]
+}
+EOF
+```
+
+* One for test
+
+```sh
+vault policy write qa -<<EOF
+path "secret/data/qa" {
+   capabilities = [ "create", "read", "update", "delete" ]
+}
+EOF
+```
+
+* check what you've created
+
+```sh
+➜ vault policy list
+default
+dev
+ops
+qa
+root
+```
+
+### Enable the userpass auth method at userpass-*.
+
+Now let's the 3 users
+
+* create user for you in `kb-userpass-ops`
+
+```sh
+vault write auth/kb-userpass-ops/users/fernandoocampo password="your-password" policies="ops"
+```
+
+* create user for you in `kb-userpass-dev`
+
+```sh
+vault write auth/kb-userpass-dev/users/fernandoocampo password="your-password" policies="dev"
+```
+
+* create user for you in `kb-userpass-qa`
+
+```sh
+vault write auth/kb-userpass-qa/users/fernandoocampo password="your-password" policies="qa"
+```
+
+* Execute the following command to discover the mount accessor for the userpass auth method.
+
+```sh
+vault auth list -detailed
+```
+
+* Run the following command to store the kb-userpass-* auth accessor value in a file named accessor_*.txt.
+
+```sh
+vault auth list -format=json | jq -r '.["kb-userpass-qa/"].accessor' > accessor_qa.txt
+vault auth list -format=json | jq -r '.["kb-userpass-ops/"].accessor' > accessor_ops.txt
+vault auth list -format=json | jq -r '.["kb-userpass-dev/"].accessor' > accessor_dev.txt
+```
+
+* Create an entity for `developers` (use here you own entity name), and store the returned entity ID in a file named, dev_entity_id.txt.
+
+```sh
+vault write -format=json identity/entity name="developers" policies="dev" \
+     metadata=organization="ACME Inc." \
+     metadata=team="development" \
+     | jq -r ".data.id" > dev_entity_id.txt
+```
+
+* Create an entity for `operators` (use here you own entity name), and store the returned entity ID in a file named, ops_entity_id.txt.
+
+```sh
+vault write -format=json identity/entity name="operators" policies="ops" \
+     metadata=organization="ACME Inc." \
+     metadata=team="infra" \
+     | jq -r ".data.id" > ops_entity_id.txt
+```
+
+* Create an entity for `qa` (use here you own entity name), and store the returned entity ID in a file named, qa_entity_id.txt.
+
+```sh
+vault write -format=json identity/entity name="qa-eng" policies="ops" \
+     metadata=organization="ACME Inc." \
+     metadata=team="qa" \
+     | jq -r ".data.id" > qa_entity_id.txt
+```
+
+* Create groups for ops, dev and qa.
+
+```sh
+vault write identity/group name="dev-team" \
+     policies="dev" \
+     member_entity_ids=$(cat dev_entity_id.txt) \
+     metadata=team="development" \
+     metadata=region="World"
+
+vault write identity/group name="qa-team" \
+     policies="qa" \
+     member_entity_ids=$(cat qa_entity_id.txt) \
+     metadata=team="qa" \
+     metadata=region="World"
+
+vault write identity/group name="infra-team" \
+     policies="ops" \
+     member_entity_ids=$(cat ops_entity_id.txt) \
+     metadata=team="infra" \
+     metadata=region="World"
+```
+
+* Review the entity details.
+
+```sh
+vault read -format=json identity/entity/id/$(cat ops_entity_id.txt) | jq -r ".data"
+```
+
+* add user fdocampo to fernandoocampo infra entity
+
+```sh
+vault write identity/entity-alias name="fdocampo" \
+     canonical_id=$(cat ops_entity_id.txt) \
+     mount_accessor=$(cat accessor_ops.txt) \
+     custom_metadata=account="Infra Account"
+```
+
+read
+
+```sh
+vault read identity/entity-alias/id/e3926cba-71c9-1bca-faa5-465b01a85dc7
+```
+
+* test the identity
+
+```sh
+vault login -format=json -method=userpass -path=kb-userpass-ops \
+    username=fernandoocampo password="your-password" \
+    | jq -r ".auth.client_token" > fdocampo_token.txt
+```
+
+
+
+
 ## Sources
 
 * [Run Vault on kubernetes](https://developer.hashicorp.com/vault/docs/platform/k8s/helm/run)
 * [Vault on Kubernetes deployment guide](https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-raft-deployment-guide)
+* [Secure multi-tenancy with namespace](https://developer.hashicorp.com/vault/tutorials/enterprise/namespaces)
