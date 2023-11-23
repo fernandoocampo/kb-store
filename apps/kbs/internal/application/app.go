@@ -44,11 +44,11 @@ var (
 	errStartingApplication = errors.New("unable to start application")
 )
 
-func NewServer(settings Setup) *Server {
+func NewServer() *Server {
 	newServer := Server{
-		version:    settings.Version,
-		buildDate:  settings.BuildDate,
-		commitHash: settings.CommitHash,
+		version:    setups.Version,
+		buildDate:  setups.BuildDate,
+		commitHash: setups.CommitHash,
 	}
 
 	return &newServer
