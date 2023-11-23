@@ -25,6 +25,25 @@ build-linux: ## Build binary for Linux
 	@mkdir -p bin
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 ${GOBUILD} -ldflags ${LDFLAGS} -o bin/${BINARY_UNIX} ./${SRC_FOLDER}/main.go
 
+.PHONY: goreleaser-snapshot
+goreleaser-snapshot: ## run a "local-only" release to see if it works using the release command
+	@goreleaser release --snapshot --clean
+
+.PHONY: goreleaser-check
+goreleaser-check: ## verify your .goreleaser.yaml is valid
+	@goreleaser check
+
+.PHONY: goreleaser-darwin-amd64
+goreleaser-darwin-amd64: # build the binary only for a given Darwin amd64,
+	GOOS=darwin GOARCH=amd64 goreleaser build --snapshot --clean --single-target
+
+.PHONY: goreleaser-linux-amd64
+goreleaser-linux-amd64: # build the binary only for a given linux amd64,
+	GOOS=linux GOARCH=amd64 goreleaser build --snapshot --clean --single-target
+
+.PHONY: goreleaser-release
+goreleaser-release: # release project
+	@goreleaser release
 
 .PHONY: run-local
 run-local: ## run project local

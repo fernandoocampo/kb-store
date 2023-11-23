@@ -4,11 +4,6 @@ import (
 	"github.com/caarlos0/env"
 )
 
-const (
-	ProductionLog  = "production"
-	DevelopmentLog = "development"
-)
-
 // Application contains data related to application configuration parameters.
 type Application struct {
 	DryRun          bool   `env:"KBS_DRY_RUN" envDefault:"false"`
@@ -22,6 +17,17 @@ type RepositoryParameters struct {
 	Region   string `env:"KBS_AWS_REGION" envDefault:"us-east-1"`
 	Endpoint string `env:"KBS_AWS_ENDPOINT" envDefault:"5432"`
 }
+
+const (
+	ProductionLog  = "production"
+	DevelopmentLog = "development"
+)
+
+var (
+	Version    string
+	BuildDate  string
+	CommitHash string
+)
 
 // Load load application configuration
 func Load() (Application, error) {
