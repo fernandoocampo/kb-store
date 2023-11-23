@@ -1,0 +1,42 @@
+# This workflow will test common endpoints project
+
+name: kbs-app
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "apps/kbs/**"
+      - ".github/workflows/kbs-app.yaml"
+  pull_request:
+    branches:
+      - "main"
+    paths:
+      - "apps/kbs/**"
+      - ".github/workflows/kbs-app.yaml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ''
+      - name: Setup go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21.x
+      - name: Cache Go Build
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-gokbs-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-gokbs-
+      - name: Test app kbs
+        run: |-
+          cd apps/kbs
+          go test -race ./...
