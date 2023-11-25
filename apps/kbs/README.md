@@ -6,6 +6,7 @@ This is a service that provides an API for kbs administration.
 
 ## How to build?
 
+### raw build to use locally
 from project folder run below commands, it will output binaries in `./bin/` folder
 
 * just build with current operating system
@@ -16,6 +17,47 @@ make build
 * build for a linux distro operating system
 ```sh
 make build-linux
+```
+
+### goreleaser build to use locally
+from project folder run below commands, it will output binaries in `./dist/` folder
+
+* verify your `.goreleaser.yml` file.
+
+```sh
+make goreleaser-check
+```
+
+* run goreleaser `"local only"` to test the release
+```sh
+make goreleaser-snapshot
+```
+
+* release only for darwin amd64 (snapshot).
+```sh
+make goreleaser-darwin-amd64
+```
+
+* release only for linux amd64 (snapshot).
+```sh
+make goreleaser-linux-amd64
+```
+
+* release with goreleaser.
+```sh
+make goreleaser-release
+```
+
+### to use locally as a container
+
+* build image
+```sh
+make build-image
+```
+
+* run container based on in the image created above.
+```sh
+make run-container-local
 ```
 
 ## How to run a test environment quickly?
