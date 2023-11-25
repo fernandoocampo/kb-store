@@ -1,3 +1,5 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/fernandoocampo/kb-store/apps/kbs)](https://goreportcard.com/report/github.com/fernandoocampo/kb-store/apps/kbs) ![Quality](https://github.com/fernandoocampo/kb-store/actions/workflows/kbs-app-quality.yml/badge.svg?branch=main)
+
 # kbs service
 
 This is a service that provides an API for kbs administration.

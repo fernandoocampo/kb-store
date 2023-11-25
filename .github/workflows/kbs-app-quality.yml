@@ -1,6 +1,6 @@
 # This workflow will test common endpoints project
 
-name: kbs-app
+name: kbs-app-quality
 
 on:
   push:
@@ -8,13 +8,13 @@ on:
       - "main"
     paths:
       - "apps/kbs/**"
-      - ".github/workflows/kbs-app.yaml"
+      - ".github/workflows/kbs-app-quality.yaml"
   pull_request:
     branches:
       - "main"
     paths:
       - "apps/kbs/**"
-      - ".github/workflows/kbs-app.yaml"
+      - ".github/workflows/kbs-app-quality.yaml"
 
 jobs:
   build:
