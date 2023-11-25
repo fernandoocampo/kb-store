@@ -8,7 +8,10 @@ BINARY_DARWIN=$(BINARY_NAME)-amd64-darwin
 COMMIT_HASH?=$(shell git rev-parse HEAD)
 BUILD_DATE?=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 VERSION?=$(shell git describe --dirty --tags --always)
-LDFLAGS?="-X main.Version=${VERSION} -X main.CommitHash=${COMMIT_HASH} -X main.BuildDate=${BUILD_DATE} -s -w"
+# LDFLAGS?="-X main.Version=${VERSION} -X main.CommitHash=${COMMIT_HASH} -X main.BuildDate=${BUILD_DATE} -s -w"
+LDFLAGS?="-X github.com/fernandoocampo/kb-store/apps/kbs/internal/setups.Version=${VERSION} -X github.com/fernandoocampo/kb-store/apps/kbs/internal/setups.CommitHash=${COMMIT_HASH} -X github.com/fernandoocampo/kb-store/apps/kbs/internal/setups.BuildDate=${BUILD_DATE} -s -w"
+DOCKER_REPO?=fdocampo
+DOCKER_CONTAINER=kbs
 
 clean: 
 	$(GOCLEAN)
@@ -24,6 +27,22 @@ build: ## Build binary for mac
 build-linux: ## Build binary for Linux
 	@mkdir -p bin
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 ${GOBUILD} -ldflags ${LDFLAGS} -o bin/${BINARY_UNIX} ./${SRC_FOLDER}/main.go
+
+.PHONY: build-image
+build-image: ## Build container image
+	DOCKER_BUILDKIT=0 podman build --build-arg appVersion=${VERSION} --build-arg commitHash=${COMMIT_HASH} --no-cache -t $(DOCKER_REPO)/$(DOCKER_CONTAINER) .
+
+.PHONY: run-container-local
+run-container-local: ## Run new container local
+	@podman run --rm -it -p 8080:8080 $(DOCKER_REPO)/$(DOCKER_CONTAINER)
+
+.PHONY: podman-login
+podman-login: ## login into docker registry
+	@podman login --username $(DOCKER_USERNAME) --verbose docker.io
+
+.PHONY: push-tag
+push-tag: ## Push a new docker image tag for kbs app.
+	@podman push $(DOCKER_REPO)/$(DOCKER_CONTAINER)
 
 .PHONY: goreleaser-snapshot
 goreleaser-snapshot: ## run a "local-only" release to see if it works using the release command
@@ -47,11 +66,11 @@ goreleaser-release: # release project
 
 .PHONY: run-local
 run-local: ## run project local
-	docker compose up --build
+	@podman-compose --file docker-compose.yml up --build
 
 .PHONY: clean-local
-clean-local: ## clean docker-compsoe
-	docker compose down
+clean-local: ## clean kbs containers
+	@podman-compose --file docker-compose.yml down --volumes
 
 .PHONY: test
 test: ## run unit tests
