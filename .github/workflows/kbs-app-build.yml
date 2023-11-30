@@ -32,8 +32,7 @@ jobs:
       with:
         images: ${{ secrets.DOCKER_USER }}/kbs
         tags: |
-          type=semver,pattern={{version}}
-          type=semver,pattern={{version}},value=$NEW_VERSION
+          type=raw,value=${{ NEW_VERSION }}
 
     - name: Build and push Docker image
       env:
